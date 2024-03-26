@@ -40,25 +40,35 @@ class PostControllerTest {
     @Test
     @DisplayName("POST: /posts 요청 시 Hello World!를 출력한다.")
     void test1() throws Exception {
+        // Given
+        PostCreateDto request = PostCreateDto.builder()
+                .title("제목입니다.")
+                .content("내용입니다.")
+                .build();
+
+        String json  = objectMapper.writeValueAsString(request);
+
+        // Expected(When + Then)
         mockMvc.perform(MockMvcRequestBuilders.post("/posts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\": \"제목입니다.\", \"content\": \"내용입니다.\"}")
+                        .content(json)
                 )
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("Hello World!"))
+                .andExpect(MockMvcResultMatchers.content().string(""))
                 .andDo(MockMvcResultHandlers.print());
     }
 
     @Test
     @DisplayName("POST: 요청 시 title 값은 필수다.")
     void test2() throws Exception {
-        // given
+        // Given
         PostCreateDto postCreateDto = PostCreateDto.builder()
                 .content("내용입니다.")
                 .build();
 
         String json = objectMapper.writeValueAsString(postCreateDto);
 
+        // Expected
         mockMvc.perform(MockMvcRequestBuilders.post("/posts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
@@ -80,7 +90,7 @@ class PostControllerTest {
     @Test
     @DisplayName("/posts 요청 시 DB에 값이 저장된다.")
     void 게시글_작성_테스트() throws Exception {
-        // given
+        // Given
         PostCreateDto postCreateDto = PostCreateDto.builder()
                 .title("제목입니다.")
                 .content("내용입니다.")
@@ -89,7 +99,7 @@ class PostControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(postCreateDto);
 
-        // when
+        // When
         mockMvc.perform(MockMvcRequestBuilders.post("/posts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
@@ -97,13 +107,32 @@ class PostControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
 
-        // then
+        // Then
         Assertions.assertEquals(1L, postRepository.count());
 
         Post post = postRepository.findAll().get(0);
         Assertions.assertEquals("제목입니다.", post.getTitle());
         Assertions.assertEquals("내용입니다.", post.getContent());
+    }
 
+    @Test
+    @DisplayName("글 단건 조회")
+    void 글_단건_조회() throws Exception {
+        // Given
+        Post newPost = Post.builder()
+                .title("제목입니다.")
+                .content("내용입니다.")
+                .build();
+        postRepository.save(newPost);
 
+        // Expected
+        mockMvc.perform(MockMvcRequestBuilders.get("/posts/{postId}", newPost.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(newPost.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("제목입니다."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content").value("내용입니다."))
+                .andDo(MockMvcResultHandlers.print());
     }
 }
