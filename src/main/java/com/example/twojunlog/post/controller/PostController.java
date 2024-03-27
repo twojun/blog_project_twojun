@@ -2,11 +2,16 @@ package com.example.twojunlog.post.controller;
 
 import com.example.twojunlog.post.domain.Post;
 import com.example.twojunlog.post.dto.request.PostCreateDto;
+import com.example.twojunlog.post.dto.response.PostResponseDto;
 import com.example.twojunlog.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * GET: /posts : 글 전체 조회(검색 + 페이징)
@@ -25,7 +30,12 @@ public class PostController {
     }
 
     @GetMapping("/posts/{postId}")
-    public Post get(@PathVariable Long postId) {
+    public PostResponseDto get(@PathVariable Long postId) {
         return postService.get(postId);
+    }
+
+    @GetMapping("/posts")
+    public List<PostResponseDto> getList(@PageableDefault Pageable pageable) {
+        return postService.getList(pageable);
     }
 }

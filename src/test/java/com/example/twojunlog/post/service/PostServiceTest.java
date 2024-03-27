@@ -2,6 +2,7 @@ package com.example.twojunlog.post.service;
 
 import com.example.twojunlog.post.domain.Post;
 import com.example.twojunlog.post.dto.request.PostCreateDto;
+import com.example.twojunlog.post.dto.response.PostResponseDto;
 import com.example.twojunlog.post.repository.PostRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,7 +61,7 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("글 단건 조회")
+    @DisplayName("게시글 단건 조회")
     void 게시글_단건_조회() throws Exception {
         // Given
         Post post = Post.builder()
@@ -63,12 +71,62 @@ class PostServiceTest {
         Post newPost = postRepository.save(post);
 
         // When
-        postService.get(newPost.getId());
+        PostResponseDto response = postService.get(newPost.getId());
 
         // Then
-        Assertions.assertNotNull(newPost);
+        Assertions.assertNotNull(response);
         Post findPost = postRepository.findAll().get(0);
-        Assertions.assertEquals("제목입니다.", findPost.getTitle());
-        Assertions.assertEquals("내용입니다.", findPost.getContent());
+        Assertions.assertEquals("제목입니다.", response.getTitle());
+        Assertions.assertEquals("내용입니다.", response.getContent());
+    }
+
+    @Test
+    @DisplayName("게시글 다수 조회")
+    void 게시글_다수_조회() throws Exception {
+        // Given
+        Post post1 = Post.builder()
+                .title("제목입니다1.")
+                .content("내용입니다1.")
+                .build();
+        Post newPost1 = postRepository.save(post1);
+
+        Post post2 = Post.builder()
+                .title("제목입니다2.")
+                .content("내용입니다2.")
+                .build();
+        Post newPost2 = postRepository.save(post2);
+
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
+
+        // When
+        List<PostResponseDto> posts = postService.getList(pageable);
+
+        // Then
+        Assertions.assertEquals(2L, posts.size());
+    }
+
+    @Test
+    @DisplayName("1페이지 조회")
+    void 페이지네이션() throws Exception {
+        // Given
+        List<Post> requestPosts = IntStream.range(1, 31)
+                .mapToObj(i -> {
+                    return Post.builder()
+                            .title("제목 " + i)
+                            .content("wonjun " + i)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts);
+
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
+
+        // When
+        List<PostResponseDto> posts = postService.getList(pageable);
+
+        // Then
+        Assertions.assertEquals(5L, posts.size());
+        Assertions.assertEquals("제목 1", posts.get(1).getTitle());
+        Assertions.assertEquals("제목 1", posts.get(1).getTitle());
     }
 }

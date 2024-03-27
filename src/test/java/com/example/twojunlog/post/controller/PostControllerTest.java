@@ -17,6 +17,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -120,7 +124,7 @@ class PostControllerTest {
     void 글_단건_조회() throws Exception {
         // Given
         Post newPost = Post.builder()
-                .title("제목입니다.")
+                .title("1234567890122345.")
                 .content("내용입니다.")
                 .build();
         postRepository.save(newPost);
@@ -131,8 +135,28 @@ class PostControllerTest {
                 )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(newPost.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("제목입니다."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("1234567890"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").value("내용입니다."))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @DisplayName("게시글 다수 조회")
+    void 게시글_다수_조회() throws Exception {
+        // Given
+        List<Post> requestPosts = IntStream.range(1, 31)
+                .mapToObj(i -> {
+                    return Post.builder()
+                            .title("제목 " + i)
+                            .content("wonjun " + i)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts);
+
+        // Expected
+        mockMvc.perform(MockMvcRequestBuilders.get("/posts?page=1&sort=id,desc&size=5")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print());
     }
 }
