@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -157,6 +158,10 @@ class PostControllerTest {
         // Expected
         mockMvc.perform(MockMvcRequestBuilders.get("/posts?page=1&sort=id,desc&size=5")
                         .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()", is(5)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].title").value("제목 30"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].content").value("wonjun 30"))
                 .andDo(MockMvcResultHandlers.print());
     }
 }
