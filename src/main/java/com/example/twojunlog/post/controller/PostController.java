@@ -2,6 +2,7 @@ package com.example.twojunlog.post.controller;
 
 import com.example.twojunlog.post.domain.Post;
 import com.example.twojunlog.post.dto.request.PostCreateDto;
+import com.example.twojunlog.post.dto.request.PostSearchDto;
 import com.example.twojunlog.post.dto.response.PostResponseDto;
 import com.example.twojunlog.post.service.PostService;
 import jakarta.validation.Valid;
@@ -35,7 +36,7 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<PostResponseDto> getList(@PageableDefault Pageable pageable) {
-        return postService.getList(pageable);
+    public List<PostResponseDto> getList(@RequestParam PostSearchDto postSearchDto) {
+        return postService.getList(postSearchDto);
     }
 }

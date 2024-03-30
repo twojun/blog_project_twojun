@@ -2,6 +2,7 @@ package com.example.twojunlog.post.service;
 
 import com.example.twojunlog.post.domain.Post;
 import com.example.twojunlog.post.dto.request.PostCreateDto;
+import com.example.twojunlog.post.dto.request.PostSearchDto;
 import com.example.twojunlog.post.dto.response.PostResponseDto;
 import com.example.twojunlog.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,8 @@ public class PostService {
                 .build();
     }
 
-    public List<PostResponseDto> getList(Pageable pageable) {
-        return postRepository.findAll(pageable).stream()
+    public List<PostResponseDto> getList(PostSearchDto postSearchDto) {
+        return postRepository.getList(postSearchDto).stream()
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }

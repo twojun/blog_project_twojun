@@ -2,6 +2,7 @@ package com.example.twojunlog.post.service;
 
 import com.example.twojunlog.post.domain.Post;
 import com.example.twojunlog.post.dto.request.PostCreateDto;
+import com.example.twojunlog.post.dto.request.PostSearchDto;
 import com.example.twojunlog.post.dto.response.PostResponseDto;
 import com.example.twojunlog.post.repository.PostRepository;
 import org.junit.jupiter.api.Assertions;
@@ -96,10 +97,13 @@ class PostServiceTest {
                 .build();
         Post newPost2 = postRepository.save(post2);
 
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
+        PostSearchDto postSearchDto = PostSearchDto.builder()
+                .page(1)
+                .size(10)
+                .build();
 
         // When
-        List<PostResponseDto> posts = postService.getList(pageable);
+        List<PostResponseDto> posts = postService.getList(postSearchDto);
 
         // Then
         Assertions.assertEquals(2L, posts.size());
@@ -109,7 +113,7 @@ class PostServiceTest {
     @DisplayName("1페이지 조회")
     void 페이지네이션() throws Exception {
         // Given
-        List<Post> requestPosts = IntStream.range(1, 31)
+        List<Post> requestPosts = IntStream.range(0, 20)
                 .mapToObj(i -> {
                     return Post.builder()
                             .title("제목 " + i)
@@ -119,14 +123,16 @@ class PostServiceTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
+        PostSearchDto postSearchDto = PostSearchDto.builder()
+                .page(1)
+                .size(10)
+                .build();
 
         // When
-        List<PostResponseDto> posts = postService.getList(pageable);
+        List<PostResponseDto> posts = postService.getList(postSearchDto);
 
         // Then
-        Assertions.assertEquals(5L, posts.size());
-        Assertions.assertEquals("제목 1", posts.get(1).getTitle());
-        Assertions.assertEquals("제목 1", posts.get(1).getTitle());
+        Assertions.assertEquals(10L, posts.size());
+        Assertions.assertEquals("제목 19", posts.get(0).getTitle());
     }
 }
