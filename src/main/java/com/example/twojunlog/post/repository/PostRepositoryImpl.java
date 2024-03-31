@@ -1,7 +1,6 @@
 package com.example.twojunlog.post.repository;
 
 import com.example.twojunlog.post.domain.Post;
-import com.example.twojunlog.post.domain.QPost;
 import com.example.twojunlog.post.dto.request.PostSearchDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +16,17 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
     @Override
     public List<Post> getList(PostSearchDto postSearchDto) {
+        return queryFactory
+                .select(post)
+                .from(post)
+                .limit(postSearchDto.getSize())
+                .offset((long) (postSearchDto.getPage() - 1) * postSearchDto.getSize())
+                .orderBy(post.id.desc())
+                .fetch();
+    }
+
+    @Override
+    public List<Post> getList2(PostSearchDto postSearchDto) {
         return queryFactory
                 .select(post)
                 .from(post)
